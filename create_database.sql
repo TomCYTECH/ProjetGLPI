@@ -1,0 +1,3 @@
+CREATE USER c##glpi IDENTIFIED BY glpi;
+GRANT CONNECT, RESOURCE, DBA TO c##glpi;
+CONNECT c##glpi/glpi;
