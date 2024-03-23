@@ -35,14 +35,15 @@ def insert_users(num_records, cursor):
     for i in range(num_records):
         cursor.execute(
             """
-            INSERT INTO GLPI_UTILISATEUR (ID, NOM, PRENOM, EMAIL, SITE_ID)
-            VALUES (:id, :nom, :prenom, :email, :site_id)
+            INSERT INTO GLPI_UTILISATEUR (ID, NOM, PRENOM, EMAIL, ROLE, SITE_ID)
+            VALUES (:id, :nom, :prenom, :email, :role, :site_id)
         """,
             {
                 "id": i + 1,
                 "nom": f"LastName{i}",
                 "prenom": f"FirstName{i}",
                 "email": f"user{i}@example.com",
+                "role": random.choice(["ADMINISTRATEUR", "TECHNICIEN", "UTILISATEUR"]),
                 "site_id": random.randint(1, 2),  # Assuming 2 sites exist
             },
         )
