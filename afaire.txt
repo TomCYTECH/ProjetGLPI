@@ -1,0 +1,7 @@
+CERGY Admin
+PAU Admin
+GLOBAL Admin
+PAU User
+CERGY User
+Pau Technicien
+CERGY Technicien
