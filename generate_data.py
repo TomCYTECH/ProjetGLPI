@@ -7,7 +7,7 @@ user = "glpi"
 password = "glpi"
 connection = oracledb.connect(user=user, password=password, dsn=dsn)
 
-NUM_RECORDS = 1000
+NUM_RECORDS = 10000
 
 
 def random_date(start, end):
