@@ -1,0 +1,10 @@
+BEGIN
+  insert_lieux_data;
+  insert_types_data;
+  insert_sites_data;
+  insert_equipements_data;
+  insert_utilisateurs_data;
+  insert_tickets_data;
+  insert_locations_data;
+END;
+/

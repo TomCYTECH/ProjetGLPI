@@ -7,3 +7,4 @@ CREATE INDEX index_glpi_ticket_equipement_id ON GLPI_TICKET (EQUIPEMENT_ID);
 CREATE INDEX index_glpi_ticket_utilisateur_id ON GLPI_TICKET (UTILISATEUR_ID);
 CREATE INDEX index_glpi_ticket_site_id ON GLPI_TICKET (SITE_ID);
 CREATE INDEX index_glpi_location_equipement_id ON GLPI_LOCATION (EQUIPEMENT_ID);
+COMMIT;

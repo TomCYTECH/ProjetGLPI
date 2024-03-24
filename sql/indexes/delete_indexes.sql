@@ -7,3 +7,4 @@ DROP INDEX index_glpi_ticket_equipement_id;
 DROP INDEX index_glpi_ticket_utilisateur_id;
 DROP INDEX index_glpi_ticket_site_id;
 DROP INDEX index_glpi_location_equipement_id;
+COMMIT;
