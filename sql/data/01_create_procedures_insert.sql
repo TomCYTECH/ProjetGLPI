@@ -85,8 +85,8 @@ BEGIN
     v_start_date := random_date(TO_DATE('2020-01-01', 'YYYY-MM-DD'), TO_DATE('2022-12-31', 'YYYY-MM-DD'));
     v_end_date := v_start_date + NUMTODSINTERVAL(TRUNC(DBMS_RANDOM.VALUE(1, 91)), 'DAY');
     
-    INSERT INTO GLPI_LOCATION (EQUIPEMENT_ID, DEBUT, FIN)
-    VALUES (TRUNC(DBMS_RANDOM.VALUE(1, 10001)), v_start_date, v_end_date);
+    INSERT INTO GLPI_LOCATION (EQUIPEMENT_ID, UTILISATEUR_ID, DEBUT, FIN)
+    VALUES (i, TRUNC(DBMS_RANDOM.VALUE(1, 10001)), v_start_date, v_end_date);
   END LOOP;
   COMMIT;
 END;
