@@ -1,0 +1,12 @@
+CONNECT SYSTEM/system;
+ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+DROP TABLESPACE glpi_data INCLUDING CONTENTS AND DATAFILES;
+DROP USER glpi CASCADE;
+DROP USER glpi_pau CASCADE;
+DROP USER glpi_pau_admin CASCADE;
+DROP USER glpi_pau_technicien CASCADE;
+DROP USER glpi_pau_utilisateur CASCADE;
+DROP USER glpi_cergy CASCADE;
+DROP USER glpi_cergy_admin CASCADE;
+DROP USER glpi_cergy_technicien CASCADE;
+DROP USER glpi_cergy_utilisateur CASCADE;
