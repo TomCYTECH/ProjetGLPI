@@ -1,3 +1,5 @@
+
+
 CREATE VIEW glpi_cergy_pau_view AS
 SELECT * FROM glpi_cergy
 UNION ALL

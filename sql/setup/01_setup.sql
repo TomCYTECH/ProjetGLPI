@@ -3,6 +3,8 @@ CREATE USER glpi IDENTIFIED BY glpi;
 GRANT CONNECT, RESOURCE, DBA TO glpi;
 CONNECT glpi/glpi;
 
+
+
 ALTER SESSION SET "_ORACLE_SCRIPT"=true;
 
 CREATE USER glpi_cergy IDENTIFIED BY glpi_cergy;
@@ -15,8 +17,8 @@ CREATE USER glpi_pau_technicien IDENTIFIED BY glpi_pau_technicien;
 CREATE USER glpi_pau_admin IDENTIFIED BY glpi_pau_admin;
 CREATE USER glpi_pau_utilisateur IDENTIFIED BY glpi_pau_utilisateur;
 
-GRANT CONNECT, CREATE VIEW, RESOURCE TO glpi_cergy;
-GRANT CONNECT, CREATE VIEW, RESOURCE TO glpi_pau;
+GRANT CREATE ROLE, CONNECT, CREATE VIEW, RESOURCE TO glpi_cergy;
+GRANT CREATE ROLE, CONNECT, CREATE VIEW, RESOURCE TO glpi_pau;
 
 SET TIMING ON;
 SET linesize 250;
