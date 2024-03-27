@@ -2,12 +2,7 @@
 
 ## Pour insérer les données
 
-### Création du venv
-```sh
-python3 -m venv .venv 
-```
-
-### Installer les bibliothèques nécessaires
-```sh
-pip install oracledb
-```
+1. Exécuter le setup
+2. Créer les tables
+3. Créer les procédures dans sql/data
+4. Executer les procédures avec le script sql/data/02_execute_procedures.sql
