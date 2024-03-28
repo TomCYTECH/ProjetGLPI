@@ -5,13 +5,19 @@ FOR EACH ROW
 DECLARE
     creation_date DATE;
 BEGIN
+    -- Sélectionner la date de création du ticket associé à partir de GLPI_TICKET
     SELECT CREATION_DATE INTO creation_date FROM GLPI_TICKET WHERE ID = :new.TICKET_ID;
-    
-    IF (:new.DEBUT < creation_date OR :new.FIN < creation_date) THEN
+
+    -- Vérifier si la date de début et la date de fin sont postérieures à la date de création du ticket
+    IF (creation_date IS NOT NULL AND (:new.DEBUT < creation_date OR :new.FIN < creation_date)) THEN
         RAISE_APPLICATION_ERROR(-20001, 'Les dates de début et de fin doivent être postérieures à la date de création du ticket.');
     END IF;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        NULL; -- Gérer l'absence de ticket associé si nécessaire
 END;
 /
+
 
 -- Trigger pour s'assurer qu'un équipement ne peut pas être assigné à deux sites différents
 CREATE OR REPLACE TRIGGER check_equipment_site
@@ -57,3 +63,23 @@ BEGIN
     END IF;
 END;
 / 
+
+
+CREATE OR REPLACE TRIGGER assign_technician
+BEFORE INSERT ON GLPI_TICKET
+FOR EACH ROW
+DECLARE
+    v_technician_id NUMBER;
+BEGIN
+    -- Vérifier si le ticket n'a pas déjà un technicien attribué
+    IF :new.UTILISATEUR_ID IS NULL THEN
+        -- Sélectionner un technicien disponible dans la base de données
+        SELECT ID INTO v_technician_id
+        FROM GLPI_UTILISATEUR
+        WHERE ROLE = 'TECHNICIEN' AND ROWNUM = 1; -- Choisissez le premier technicien disponible, vous pouvez ajuster la logique selon vos besoins
+        
+        -- Attribuer le technicien au nouveau ticket
+        :new.UTILISATEUR_ID := v_technician_id;
+    END IF;
+END;
+/
