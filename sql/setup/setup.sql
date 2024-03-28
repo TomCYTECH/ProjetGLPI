@@ -246,23 +246,23 @@ COMMIT;
 CONNECT glpi_cergy/glpi_cergy;
 ALTER SESSION SET "_ORACLE_SCRIPT"=true;
 
-CREATE OR REPLACE TRIGGER check_location_dates
-BEFORE INSERT ON GLPI_LOCATION
-FOR EACH ROW
-DECLARE
-    creation_date DATE;
-BEGIN
+-- CREATE OR REPLACE TRIGGER check_location_dates
+-- BEFORE INSERT ON GLPI_LOCATION
+-- FOR EACH ROW
+-- DECLARE
+--    creation_date DATE;
+-- BEGIN
     -- Sélectionner la date de création du ticket associé à partir de GLPI_TICKET
-    SELECT CREATION_DATE INTO creation_date FROM GLPI_TICKET WHERE ID = :new.TICKET_ID;
+--    SELECT CREATION_DATE INTO creation_date FROM GLPI_TICKET WHERE ID = :new.TICKET_ID;
 
     -- Vérifier si la date de début et la date de fin sont postérieures à la date de création du ticket
-    IF (creation_date IS NOT NULL AND (:new.DEBUT < creation_date OR :new.FIN < creation_date)) THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Les dates de début et de fin doivent être postérieures à la date de création du ticket.');
-    END IF;
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        NULL; -- Gérer l'absence de ticket associé si nécessaire
-END;
+--    IF (creation_date IS NOT NULL AND (:new.DEBUT < creation_date OR :new.FIN < creation_date)) THEN
+--        RAISE_APPLICATION_ERROR(-20001, 'Les dates de début et de fin doivent être postérieures à la date de création du ticket.');
+--    END IF;
+-- EXCEPTION
+--    WHEN NO_DATA_FOUND THEN
+--        NULL; -- Gérer l'absence de ticket associé si nécessaire
+-- END;
 /
 
 
@@ -471,6 +471,9 @@ FROM GLPI_EQUIPEMENT e
 JOIN GLPI_TYPE t ON e.TYPE_ID = t.ID
 JOIN GLPI_LIEU l ON e.LIEU_ID = l.ID
 JOIN GLPI_SITE s ON e.SITE_ID = s.ID;
+GRANT SELECT ON glpi_cergy.view_equipement_details TO cergy_utilisateur_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_equipement_details TO cergy_technicien_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_equipement_details TO cergy_admin_role;
 
 -- Vue qui résume les équipements d'un site
 CREATE OR REPLACE VIEW glpi_cergy.view_equipements_site AS
@@ -479,6 +482,9 @@ FROM GLPI_SITE s
 JOIN GLPI_EQUIPEMENT e ON s.ID = e.SITE_ID
 JOIN GLPI_TYPE t ON e.TYPE_ID = t.ID
 GROUP BY s.NOM, t.NOM;
+GRANT SELECT ON glpi_cergy.view_equipements_site TO cergy_utilisateur_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_equipements_site TO cergy_technicien_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_equipements_site TO cergy_admin_role;
 
 -- Vue qui résume les équipements disponibles (Technicien et utilisateur)
 CREATE OR REPLACE VIEW glpi_cergy.view_equipements_disponibles AS
@@ -486,12 +492,17 @@ SELECT e.NOM AS Equipment, e.ID, CASE WHEN l.FIN < CURRENT_DATE THEN 'Disponible
 FROM GLPI_EQUIPEMENT e
 LEFT JOIN GLPI_LOCATION l ON e.ID = l.EQUIPEMENT_ID
 ORDER BY e.ID;
+GRANT SELECT ON glpi_cergy.view_equipements_disponibles TO cergy_utilisateur_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_equipements_disponibles TO cergy_technicien_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_equipements_disponibles TO cergy_admin_role;
 
--- Vue qui donne les utilisateurs par site
+-- Vue qui donne les utilisateurs par site (Technicien et administrateur)
 CREATE OR REPLACE VIEW glpi_cergy.view_utilisateurs_par_site AS
 SELECT u.ID, u.NOM, u.PRENOM, u.EMAIL, u.ROLE, s.NOM AS Site
 FROM GLPI_UTILISATEUR u
 JOIN GLPI_SITE s ON u.SITE_ID = s.ID;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_utilisateurs_par_site TO cergy_technicien_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_utilisateurs_par_site TO cergy_admin_role;
 
 
 -----------
@@ -506,6 +517,7 @@ JOIN GLPI_TYPE t ON e.TYPE_ID = t.ID
 JOIN GLPI_LIEU l ON e.LIEU_ID = l.ID
 JOIN GLPI_SITE s ON e.SITE_ID = s.ID
 LEFT JOIN GLPI_LOCATION loc ON e.ID = loc.EQUIPEMENT_ID;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_equipements_details TO cergy_admin_role;
 
 -- Vue qui détaille la les utilisateurs et l'état de leurs tickets
 CREATE OR REPLACE VIEW glpi_cergy.view_utilisateurs_tickets AS
@@ -524,6 +536,7 @@ SELECT t.ID, t.NOM, t.DESCRIPTION, t.CREATION_DATE, u.NOM || ' ' || u.PRENOM AS 
 FROM GLPI_TICKET t
 JOIN GLPI_UTILISATEUR u ON t.UTILISATEUR_ID = u.ID
 WHERE t.STATUT = 'OUVERT';
+GRANT SELECT, UPDATE ON glpi_cergy.view_technicien_tickets_ouverts TO cergy_technicien_role;
 
 -- Vue des tickets en cours
 CREATE OR REPLACE VIEW glpi_cergy.view_technicien_tickets_en_cours AS
@@ -531,6 +544,7 @@ SELECT t.ID, t.NOM, t.DESCRIPTION, t.CREATION_DATE, u.NOM || ' ' || u.PRENOM AS 
 FROM GLPI_TICKET t
 JOIN GLPI_UTILISATEUR u ON t.UTILISATEUR_ID = u.ID
 WHERE t.STATUT = 'EN_COURS';
+GRANT SELECT, UPDATE ON glpi_cergy.view_technicien_tickets_en_cours TO cergy_technicien_role;
 
 -- Vue des tickets fermés
 CREATE OR REPLACE VIEW glpi_cergy.view_technicien_tickets_fermes AS
@@ -538,6 +552,7 @@ SELECT t.ID, t.NOM, t.DESCRIPTION, t.CREATION_DATE, u.NOM || ' ' || u.PRENOM AS 
 FROM GLPI_TICKET t
 JOIN GLPI_UTILISATEUR u ON t.UTILISATEUR_ID = u.ID
 WHERE t.STATUT = 'FERME';
+GRANT SELECT, UPDATE ON glpi_cergy.view_technicien_tickets_fermes TO cergy_technicien_role;
 
 -- Vue des tickets pour un utilisateur
 CREATE OR REPLACE VIEW glpi_cergy.view_tickets_utilisateur AS
@@ -545,6 +560,7 @@ SELECT u.NOM AS User_Name, u.PRENOM AS User_FirstName, t.NOM AS Ticket, t.STATUT
 FROM GLPI_UTILISATEUR u
 JOIN GLPI_TICKET t ON u.ID = t.UTILISATEUR_ID
 JOIN GLPI_EQUIPEMENT e ON t.EQUIPEMENT_ID = e.ID;
+GRANT SELECT, UPDATE ON glpi_cergy.view_tickets_utilisateur TO cergy_technicien_role;
 
 
 -----------------
@@ -558,14 +574,6 @@ FROM GLPI_EQUIPEMENT e
 JOIN GLPI_TYPE t ON e.TYPE_ID = t.ID
 WHERE e.ID NOT IN (SELECT EQUIPEMENT_ID FROM GLPI_LOCATION WHERE FIN > SYSDATE);
 COMMIT;
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_cergy.view_equipements_details TO cergy_admin_role;
-
-GRANT SELECT, UPDATE ON glpi_cergy.view_technicien_tickets_ouverts TO cergy_technicien_role;
-GRANT SELECT, UPDATE ON glpi_cergy.view_technicien_tickets_en_cours TO cergy_technicien_role;
-GRANT SELECT, UPDATE ON glpi_cergy.view_technicien_tickets_fermes TO cergy_technicien_role;
-GRANT SELECT, UPDATE ON glpi_cergy.view_tickets_utilisateur TO cergy_technicien_role;
-
 GRANT SELECT ON glpi_cergy.view_utilisateur_equipements_disponibles TO cergy_utilisateur_role;
 
 -- Pau
@@ -576,6 +584,9 @@ FROM GLPI_EQUIPEMENT e
 JOIN GLPI_TYPE t ON e.TYPE_ID = t.ID
 JOIN GLPI_LIEU l ON e.LIEU_ID = l.ID
 JOIN GLPI_SITE s ON e.SITE_ID = s.ID;
+GRANT SELECT ON glpi_pau.view_equipement_details TO pau_utilisateur_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_equipement_details TO pau_technicien_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_equipement_details TO pau_admin_role;
 
 -- Vue qui résume les équipements d'un site
 CREATE OR REPLACE VIEW glpi_pau.view_equipements_site AS
@@ -584,6 +595,9 @@ FROM GLPI_SITE s
 JOIN GLPI_EQUIPEMENT e ON s.ID = e.SITE_ID
 JOIN GLPI_TYPE t ON e.TYPE_ID = t.ID
 GROUP BY s.NOM, t.NOM;
+GRANT SELECT ON glpi_pau.view_equipements_site TO pau_utilisateur_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_equipements_site TO pau_technicien_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_equipements_site TO pau_admin_role;
 
 -- Vue qui résume les équipements disponibles (Technicien et utilisateur)
 CREATE OR REPLACE VIEW glpi_pau.view_equipements_disponibles AS
@@ -591,12 +605,17 @@ SELECT e.NOM AS Equipment, e.ID, CASE WHEN l.FIN < CURRENT_DATE THEN 'Disponible
 FROM GLPI_EQUIPEMENT e
 LEFT JOIN GLPI_LOCATION l ON e.ID = l.EQUIPEMENT_ID
 ORDER BY e.ID;
+GRANT SELECT ON glpi_pau.view_equipements_disponibles TO pau_utilisateur_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_equipements_disponibles TO pau_technicien_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_equipements_disponibles TO pau_admin_role;
 
--- Vue qui donne les utilisateurs par site
+-- Vue qui donne les utilisateurs par site (Technicien et administrateur)
 CREATE OR REPLACE VIEW glpi_pau.view_utilisateurs_par_site AS
 SELECT u.ID, u.NOM, u.PRENOM, u.EMAIL, u.ROLE, s.NOM AS Site
 FROM GLPI_UTILISATEUR u
 JOIN GLPI_SITE s ON u.SITE_ID = s.ID;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_utilisateurs_par_site TO pau_technicien_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_utilisateurs_par_site TO pau_admin_role;
 
 
 -----------
@@ -611,6 +630,7 @@ JOIN GLPI_TYPE t ON e.TYPE_ID = t.ID
 JOIN GLPI_LIEU l ON e.LIEU_ID = l.ID
 JOIN GLPI_SITE s ON e.SITE_ID = s.ID
 LEFT JOIN GLPI_LOCATION loc ON e.ID = loc.EQUIPEMENT_ID;
+GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_equipements_details TO pau_admin_role;
 
 -- Vue qui détaille la les utilisateurs et l'état de leurs tickets
 CREATE OR REPLACE VIEW glpi_pau.view_utilisateurs_tickets AS
@@ -629,6 +649,7 @@ SELECT t.ID, t.NOM, t.DESCRIPTION, t.CREATION_DATE, u.NOM || ' ' || u.PRENOM AS 
 FROM GLPI_TICKET t
 JOIN GLPI_UTILISATEUR u ON t.UTILISATEUR_ID = u.ID
 WHERE t.STATUT = 'OUVERT';
+GRANT SELECT, UPDATE ON glpi_pau.view_technicien_tickets_ouverts TO pau_technicien_role;
 
 -- Vue des tickets en cours
 CREATE OR REPLACE VIEW glpi_pau.view_technicien_tickets_en_cours AS
@@ -636,6 +657,7 @@ SELECT t.ID, t.NOM, t.DESCRIPTION, t.CREATION_DATE, u.NOM || ' ' || u.PRENOM AS 
 FROM GLPI_TICKET t
 JOIN GLPI_UTILISATEUR u ON t.UTILISATEUR_ID = u.ID
 WHERE t.STATUT = 'EN_COURS';
+GRANT SELECT, UPDATE ON glpi_pau.view_technicien_tickets_en_cours TO pau_technicien_role;
 
 -- Vue des tickets fermés
 CREATE OR REPLACE VIEW glpi_pau.view_technicien_tickets_fermes AS
@@ -643,6 +665,7 @@ SELECT t.ID, t.NOM, t.DESCRIPTION, t.CREATION_DATE, u.NOM || ' ' || u.PRENOM AS 
 FROM GLPI_TICKET t
 JOIN GLPI_UTILISATEUR u ON t.UTILISATEUR_ID = u.ID
 WHERE t.STATUT = 'FERME';
+GRANT SELECT, UPDATE ON glpi_pau.view_technicien_tickets_fermes TO pau_technicien_role;
 
 -- Vue des tickets pour un utilisateur
 CREATE OR REPLACE VIEW glpi_pau.view_tickets_utilisateur AS
@@ -650,6 +673,7 @@ SELECT u.NOM AS User_Name, u.PRENOM AS User_FirstName, t.NOM AS Ticket, t.STATUT
 FROM GLPI_UTILISATEUR u
 JOIN GLPI_TICKET t ON u.ID = t.UTILISATEUR_ID
 JOIN GLPI_EQUIPEMENT e ON t.EQUIPEMENT_ID = e.ID;
+GRANT SELECT, UPDATE ON glpi_pau.view_tickets_utilisateur TO pau_technicien_role;
 
 
 -----------------
@@ -663,15 +687,7 @@ FROM GLPI_EQUIPEMENT e
 JOIN GLPI_TYPE t ON e.TYPE_ID = t.ID
 WHERE e.ID NOT IN (SELECT EQUIPEMENT_ID FROM GLPI_LOCATION WHERE FIN > SYSDATE);
 COMMIT;
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON glpi_pau.view_equipements_details TO cergy_admin_role;
-
-GRANT SELECT, UPDATE ON glpi_pau.view_technicien_tickets_ouverts TO cergy_technicien_role;
-GRANT SELECT, UPDATE ON glpi_pau.view_technicien_tickets_en_cours TO cergy_technicien_role;
-GRANT SELECT, UPDATE ON glpi_pau.view_technicien_tickets_fermes TO cergy_technicien_role;
-GRANT SELECT, UPDATE ON glpi_pau.view_tickets_utilisateur TO cergy_technicien_role;
-
-GRANT SELECT ON glpi_pau.view_utilisateur_equipements_disponibles TO cergy_utilisateur_role;
+GRANT SELECT ON glpi_pau.view_utilisateur_equipements_disponibles TO pau_utilisateur_role;
 
 -----------------------
 -- CREATION DES VUES --
